@@ -8,6 +8,7 @@ import NewPostScreen from '../screens/NewPostScreen'
 import BottomTabNav from './BottomTabNav';
 import SinglePostScreen from '../screens/SinglePostScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import EditProfileScreen from '../screens/EditProfileScreen';
 
 const Stack = createStackNavigator();
 export const SignedInStack = () => {
@@ -20,6 +21,7 @@ export const SignedInStack = () => {
                 <Stack.Screen component={BottomTabNav} name="HomeTab" />
                 <Stack.Screen component={NewPostScreen} name="NewPostScreen" />
                 <Stack.Screen component={ProfileScreen} name="ProfileScreen" />
+                <Stack.Screen component={EditProfileScreen} name="EditProfileScreen" />
             </Stack.Navigator>
         </NavigationContainer>
     );

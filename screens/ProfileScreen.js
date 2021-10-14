@@ -8,6 +8,9 @@ import { firebase, db } from '../firebase'
 import { useNavigation, useRoute } from '@react-navigation/core'
 import Post from '../components/home/Post'
 
+const isNotMe = (userEmail) => {
+    return userEmail !== firebase.auth().currentUser.email
+}
 
 const ProfileScreen = () => {
     const route = useRoute()
@@ -28,6 +31,9 @@ const ProfileScreen = () => {
                     setCurrentLoggedInUser({
                         username: doc.data().username,
                         profilePicture: doc.data().profile_picture,
+                        name: doc.data().name,
+                        bio: doc.data().bio,
+                        website: doc.data().website,
                     })
                 })
             )
@@ -45,7 +51,7 @@ const ProfileScreen = () => {
         getUserPosts(userEmail)
     }, [])
     if (!currentLoggedInUser) {
-        return <Text>No current user</Text>
+        return <Text>Loading...</Text>
     }
     return (
         <View style={styles.container}>
@@ -55,8 +61,8 @@ const ProfileScreen = () => {
             <ScrollView style={styles.container}>
 
                 <ProfileRow profilePicture={currentLoggedInUser.profilePicture} posts={posts} />
-                <ProfileBio name={firebase.auth().currentUser.email} />
-                <ButtonsRow />
+                <ProfileBio email={firebase.auth().currentUser.email} name={currentLoggedInUser.name} bio={currentLoggedInUser.bio} website={currentLoggedInUser.website} />
+                <ButtonsRow userEmail={userEmail} />
                 <View style={styles.stories}>
                     <Stories />
                 </View>
@@ -78,12 +84,14 @@ const ProfileHeader = ({ username, userEmail }) => {
     const navigation = useNavigation()
     return (
         <View style={styles.headerContainer}>
-            {userEmail !== firebase.auth().currentUser.email && <TouchableOpacity onPress={() => navigation.goBack()}>
+            {isNotMe(userEmail) && <TouchableOpacity onPress={() => navigation.goBack()}>
                 <Ionicons name="chevron-back" size={30} color="white" />
             </TouchableOpacity>}
             <Text numberOfLines={1} style={styles.username}>{username}</Text>
             <View style={styles.headerIconsContainer}>
-                <FontAwesome name={"plus-square-o"} size={32} color="white" />
+                <TouchableOpacity onPress={() => navigation.navigate('NewPostScreen')}>
+                    <FontAwesome name={"plus-square-o"} size={32} color="white" />
+                </TouchableOpacity>
                 <Entypo name={"menu"} size={32} color="white" />
             </View>
         </View>
@@ -112,31 +120,63 @@ const ProfileRow = ({ profilePicture, posts }) => {
     )
 }
 
-const ProfileBio = ({ name }) => {
+const ProfileBio = ({ name, email, website, bio }) => {
     return (
         <View style={styles.bioContainer}>
             <Text style={styles.name}>{name}</Text>
             <Text numberOfLines={3} style={styles.bio}>{
-                'Photography is passion! \nFuture programmer by education \n5 Aug'
+                bio
             }
             </Text>
+            {website && (
+                <Text style={styles.text}>{website}</Text>
+            )}
+            {email && (
+                <Text style={styles.text}>{email}</Text>
+            )}
         </View>
     )
 }
 
-const ButtonsRow = () => {
+const ButtonsRow = ({ userEmail }) => {
+    const navigation = useNavigation()
+
+    const signedinUserButtons = [
+        {
+            name: "Edit Profile",
+
+        },
+        {
+            name: "Ad Tools",
+        },
+        {
+            name: "Insights",
+        },
+
+    ]
+    const notSignedinUserButtons = [
+        {
+            name: "Follow",
+        },
+        {
+            name: "Message",
+        },
+        {
+            name: "Contact",
+
+        },
+
+    ]
     return (
+
         <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.button}>
-                <Text style={styles.buttonText}>Edit Profile</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.button}>
-                <Text style={styles.buttonText}>Ad Tools</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.button}>
-                <Text style={styles.buttonText}>Insights</Text>
-            </TouchableOpacity>
-        </View>
+            {(isNotMe(userEmail) ? notSignedinUserButtons : signedinUserButtons).map((item, index) =>
+                <TouchableOpacity onPress={() => item.name == "Edit Profile" ? navigation.navigate("EditProfileScreen") : null} key={index} style={styles.button}>
+                    <Text style={styles.buttonText}>{item.name}</Text>
+                </TouchableOpacity>
+            )
+            }
+        </View >
     )
 }
 
