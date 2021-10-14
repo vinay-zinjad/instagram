@@ -6,6 +6,8 @@ import LoginScreen from '../screens/LoginScreen';
 import SignupScreen from '../screens/SignupScreen';
 import NewPostScreen from '../screens/NewPostScreen'
 import BottomTabNav from './BottomTabNav';
+import SinglePostScreen from '../screens/SinglePostScreen';
+import ProfileScreen from '../screens/ProfileScreen';
 
 const Stack = createStackNavigator();
 export const SignedInStack = () => {
@@ -13,9 +15,11 @@ export const SignedInStack = () => {
         <NavigationContainer>
             <Stack.Navigator
                 initialRouteName="HomeTab"
-                screenOptions={{ headerShown: false }}>
+                screenOptions={{ headerShown: false }}
+            >
                 <Stack.Screen component={BottomTabNav} name="HomeTab" />
                 <Stack.Screen component={NewPostScreen} name="NewPostScreen" />
+                <Stack.Screen component={ProfileScreen} name="ProfileScreen" />
             </Stack.Navigator>
         </NavigationContainer>
     );

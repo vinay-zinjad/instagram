@@ -1,36 +1,88 @@
-import React from 'react'
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native'
-import { FontAwesome, Entypo } from 'react-native-vector-icons'
+import React, { useEffect, useState } from 'react'
+import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native'
+import { FontAwesome, Entypo, Ionicons } from 'react-native-vector-icons'
 import Stories from '../components/home/Stories'
 import { POSTS } from '../data/posts'
 import { Divider } from 'react-native-elements'
+import { firebase, db } from '../firebase'
+import { useNavigation, useRoute } from '@react-navigation/core'
+import Post from '../components/home/Post'
+
 
 
 const ProfileScreen = () => {
+    const route = useRoute()
+    const userUid = route?.params?.otherUserUid ? route.params.otherUserUid : firebase.auth().ntUser
+    const userEmail = route?.params?.userEmail ? route.params.userEmail : firebase.auth().ntUser.email
+    const [ntLoggedInUser, setntLoggedInUser] = useState(null)
+    const [posts, setPosts] = useState([])
+    const [modalVisible, setModalVisible] = useState(false)
+    const [ntPostToShow, setntPostToShow] = useState()
 
+    const getUserInfo = (userUid) => {
+
+
+        const unsubscribe = db
+            .collection('users')
+            .where('owner_uid', '==', userUid.uid).limit(1).onSnapshot(
+                snapshot => snapshot.docs.map(doc => {
+                    setntLoggedInUser({
+                        username: doc.data().username,
+                        profilePicture: doc.data().profile_picture,
+                    })
+                })
+            )
+        return unsubscribe
+    }
+    const getUserPosts = () => {
+
+        const unsubscribe = db.collection('users').doc(userEmail).collection('posts').onSnapshot(snapshot => {
+            setPosts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })))
+        })
+        return unsubscribe
+    }
+    useEffect(() => {
+        getUserInfo(userUid)
+        getUserPosts(userEmail)
+    }, [])
+    if (!ntLoggedInUser) {
+        return <Text>No nt user</Text>
+    }
     return (
         <View style={styles.container}>
 
-            <ProfileHeader />
+            <ProfileHeader username={ntLoggedInUser?.username} userEmail={userEmail} />
             <Divider width={1} color="#242424" orientation="horizontal" />
             <ScrollView style={styles.container}>
 
-                <ProfileRow />
-                <ProfileBio />
+                <ProfileRow profilePicture={ntLoggedInUser.profilePicture} posts={posts} />
+                <ProfileBio name={firebase.auth().ntUser.email} />
                 <ButtonsRow />
                 <View style={styles.stories}>
                     <Stories />
                 </View>
-                <Feed />
+                <Feed
+                    posts={posts}
+                    setModalVisible={setModalVisible}
+                    setntPostToShow={setntPostToShow}
+                />
+                <PostModal
+                    post={ntPostToShow}
+                    modalVisible={modalVisible}
+                    setModalVisible={setModalVisible} setntPostToShow={setntPostToShow} ntPostToShow={ntPostToShow} />
             </ScrollView>
         </View>
     )
 }
 
-const ProfileHeader = () => {
+const ProfileHeader = ({ username, userEmail }) => {
+    const navigation = useNavigation()
     return (
         <View style={styles.headerContainer}>
-            <Text numberOfLines={1} style={styles.username}>vinay_zinjad</Text>
+            {userEmail !== firebase.auth().ntUser.email && <TouchableOpacity onPress={() => navigation.goBack()}>
+                <Ionicons name="chevron-back" size={30} color="white" />
+            </TouchableOpacity>}
+            <Text numberOfLines={1} style={styles.username}>{username}</Text>
             <View style={styles.headerIconsContainer}>
                 <FontAwesome name={"plus-square-o"} size={32} color="white" />
                 <Entypo name={"menu"} size={32} color="white" />
@@ -39,13 +91,13 @@ const ProfileHeader = () => {
     )
 }
 
-const ProfileRow = () => {
+const ProfileRow = ({ profilePicture, posts }) => {
     return (
         <View style={styles.profileRowContainer}>
-            <Image source={{ uri: 'https://source.unsplash.com/YUu9UAcOKZ4/900x900' }} style={styles.profileImage} />
+            <Image source={{ uri: profilePicture }} style={styles.profileImage} />
             <View style={styles.infoContainerMain}>
                 <View style={styles.infoContainer}>
-                    <Text style={styles.number}>37</Text>
+                    <Text style={styles.number}>{posts.length}</Text>
                     <Text style={styles.text}>Posts</Text>
                 </View>
                 <View style={styles.infoContainer}>
@@ -61,10 +113,10 @@ const ProfileRow = () => {
     )
 }
 
-const ProfileBio = () => {
+const ProfileBio = ({ name }) => {
     return (
         <View style={styles.bioContainer}>
-            <Text style={styles.name}>Vinay Zinjad</Text>
+            <Text style={styles.name}>{name}</Text>
             <Text numberOfLines={3} style={styles.bio}>{
                 'Photography is passion! \nFuture programmer by education \n5 Aug'
             }
@@ -89,7 +141,8 @@ const ButtonsRow = () => {
     )
 }
 
-export const Feed = () => {
+export const Feed = ({ posts, setModalVisible, ntPostToShow, setntPostToShow }) => {
+    const navigation = useNavigation()
     const { height, width } = useWindowDimensions()
     return (<View style={styles.feedContainer}>
         <View style={styles.feedIcons}>
@@ -97,13 +150,48 @@ export const Feed = () => {
         </View>
         <View style={styles.feedImages}>
             {
-                POSTS.map((item, index) => (
-                    <Image key={index} source={{ uri: item.imageUrl }} style={{ height: width / 3.04, width: width / 3.04, marginBottom: 2 }} />
+                posts.map((item, index) => (
+                    <TouchableOpacity
+                        onPress={() => {
+                            setModalVisible(true)
+                            setntPostToShow(item)
+                            console.log(item)
+                        }} key={index}>
+                        <Image source={{ uri: item.imageUrl }} style={{ height: width / 3.1, width: width / 3.1, margin: 2 }} />
+                    </TouchableOpacity>
                 ))
             }
 
         </View>
-    </View>)
+    </View >)
+}
+
+const PostModal = ({ post, modalVisible, setModalVisible }) => {
+
+    return (
+
+        <Modal
+            animationType="slide"
+            transparent={false}
+            presentationStyle="fullScreen"
+            visible={modalVisible}
+            onRequestClose={() => {
+
+                setModalVisible(!modalVisible)
+            }}
+        >
+            <View style={styles.modalContainer}>
+                <Post
+                    post={post}
+                    modalVisible={modalVisible}
+                    setModalVisible={setModalVisible}
+                    formModal={true}
+                />
+            </View>
+            <Pressable  ></Pressable>
+
+        </Modal>
+    )
 }
 export default ProfileScreen
 
@@ -216,10 +304,14 @@ const styles = StyleSheet.create({
     feedContainer: {},
     feedIcons: {},
     feedImages: {
-        justifyContent: "space-between",
+        // justifyContent: "space-between",
         flexWrap: 'wrap',
         flexDirection: "row",
     },
 
+    modalContainer: {
+        flex: 1,
+        backgroundColor: "black"
+    }
 
 })

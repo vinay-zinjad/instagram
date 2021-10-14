@@ -1,16 +1,16 @@
-import { useNavigation } from '@react-navigation/core'
+import { useNavigation, useRoute } from '@react-navigation/core'
 import React, { useEffect, useState } from 'react'
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { Divider } from "react-native-elements"
 import { Entypo, Fontisto, Feather, AntDesign, Ionicons } from 'react-native-vector-icons'
-import { db, firebase } from '../../firebase'
+import { db, firebase } from '../firebase'
 
-const Post = ({ post, formModal = false, setModalVisible, modalVisible }) => {
-    if (!post) {
-        return <></>;
-    }
+const SinglePostScreen = () => {
+    const route = useRoute()
+    const post = route?.params?.post
+
     const handleLike = post => {
-        const currentLikeStatus = !post?.likes_by_users.includes(
+        const currentLikeStatus = !post.likes_by_users.includes(
             firebase.auth().currentUser.email
         )
         db.collection('users')
@@ -33,40 +33,31 @@ const Post = ({ post, formModal = false, setModalVisible, modalVisible }) => {
             })
     }
     return (
-        <View>
-            <PostHeader post={post} formModal={formModal} setModalVisible={setModalVisible} />
+        <ScrollView style={styles.container}>
+            <PostHeader post={post} />
             <PostImage post={post} />
             <View style={{ marginHorizontal: 15, marginVertical: 10 }}>
                 <PostFooter post={post} handleLike={handleLike} />
             </View>
-        </View>
+        </ScrollView>
     )
 }
 
-const PostHeader = ({ post, formModal, setModalVisible }) => {
-
+const PostHeader = ({ post }) => {
     const navigation = useNavigation()
     return (
         <View style={styles.postHeaderContainer}>
-            <View style={styles.goBackButtonContainer}>
-
-                {formModal && <TouchableOpacity onPress={() => setModalVisible(false)}>
-                    <Ionicons name="chevron-back" size={30} color="white" style={styles.goBackButton} />
-                </TouchableOpacity>}
-                <TouchableOpacity onPress={() => navigation.navigate("ProfileScreen", {
-                    otherUserUid:
-                    {
-                        uid: post.owner_uid,
-                    },
-                    userEmail: post.owner_email
-                }
-                )} style={styles.PostHeaderUserContainer}>
-                    <Image style={styles.profilePicture} source={{ uri: post.profile_picture }} />
-                    <Text style={styles.userName}>{post.user}</Text>
+            <View style={styles.PostHeaderUserContainer}>
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <Ionicons name="chevron-back" size={30} color="white" />
                 </TouchableOpacity>
+                <Image style={styles.profilePicture} source={{ uri: post.profile_picture }} />
+                <Text style={styles.userName}>{post.user}</Text>
             </View>
             <Entypo name="dots-three-vertical" color="gray" size={20} />
         </View>
+
+
     )
 }
 const PostImage = ({ post }) => (
@@ -137,9 +128,13 @@ const Comments = ({ post }) => (
         ))}
     </>
 )
-export default Post
+export default SinglePostScreen
 
 const styles = StyleSheet.create({
+    container: {
+        backgroundColor: "black",
+        flex: 1,
+    },
     postHeaderContainer: {
         flexDirection: "row",
         justifyContent: "space-between",
@@ -181,11 +176,5 @@ const styles = StyleSheet.create({
     },
     caption: {
         color: "white"
-    },
-    goBackButtonContainer: {
-        flexDirection: "row",
-    },
-    goBackButton: {
-        marginRight: 20,
     }
 })

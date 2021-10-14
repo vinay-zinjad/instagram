@@ -35,7 +35,7 @@ const FormikPostUploader = () => {
     useEffect(() => {
         getUsername()
     }, [])
-    console.log(currentLoggedInUser)
+
 
     const uploadPostToFirebase = (imageUrl, caption) => {
         const unsubscribe = db.collection('users').doc(firebase.auth().currentUser.email).collection('posts')

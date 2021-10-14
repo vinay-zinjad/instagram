@@ -1,9 +1,16 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { StyleSheet, Text, TextInput, View } from 'react-native'
 import { Fontisto } from 'react-native-vector-icons'
+import { db } from '../firebase'
 import { Feed } from './ProfileScreen'
 
 const SearchScreen = () => {
+    const [posts, setPosts] = useState([])
+    useEffect(() => {
+        db.collectionGroup('posts').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+            setPosts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })))
+        })
+    }, [])
     return (
         <View style={styles.container}>
             <View style={styles.inputContainer}>
@@ -14,7 +21,7 @@ const SearchScreen = () => {
                     style={styles.input}
                 />
             </View>
-            <Feed />
+            <Feed posts={posts} />
         </View>
     )
 }
