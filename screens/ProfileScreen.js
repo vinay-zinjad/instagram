@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native'
+import { Alert, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native'
 import { FontAwesome, Entypo, Ionicons } from 'react-native-vector-icons'
 import Stories from '../components/home/Stories'
 import { POSTS } from '../data/posts'
@@ -9,15 +9,14 @@ import { useNavigation, useRoute } from '@react-navigation/core'
 import Post from '../components/home/Post'
 
 
-
 const ProfileScreen = () => {
     const route = useRoute()
-    const userUid = route?.params?.otherUserUid ? route.params.otherUserUid : firebase.auth().ntUser
-    const userEmail = route?.params?.userEmail ? route.params.userEmail : firebase.auth().ntUser.email
-    const [ntLoggedInUser, setntLoggedInUser] = useState(null)
+    const userUid = route?.params?.otherUserUid ? route.params.otherUserUid : firebase.auth().currentUser
+    const userEmail = route?.params?.userEmail ? route.params.userEmail : firebase.auth().currentUser.email
+    const [currentLoggedInUser, setCurrentLoggedInUser] = useState(null)
     const [posts, setPosts] = useState([])
     const [modalVisible, setModalVisible] = useState(false)
-    const [ntPostToShow, setntPostToShow] = useState()
+    const [currentPostToShow, setCurrentPostToShow] = useState()
 
     const getUserInfo = (userUid) => {
 
@@ -26,7 +25,7 @@ const ProfileScreen = () => {
             .collection('users')
             .where('owner_uid', '==', userUid.uid).limit(1).onSnapshot(
                 snapshot => snapshot.docs.map(doc => {
-                    setntLoggedInUser({
+                    setCurrentLoggedInUser({
                         username: doc.data().username,
                         profilePicture: doc.data().profile_picture,
                     })
@@ -45,18 +44,18 @@ const ProfileScreen = () => {
         getUserInfo(userUid)
         getUserPosts(userEmail)
     }, [])
-    if (!ntLoggedInUser) {
-        return <Text>No nt user</Text>
+    if (!currentLoggedInUser) {
+        return <Text>No current user</Text>
     }
     return (
         <View style={styles.container}>
 
-            <ProfileHeader username={ntLoggedInUser?.username} userEmail={userEmail} />
+            <ProfileHeader username={currentLoggedInUser?.username} userEmail={userEmail} />
             <Divider width={1} color="#242424" orientation="horizontal" />
             <ScrollView style={styles.container}>
 
-                <ProfileRow profilePicture={ntLoggedInUser.profilePicture} posts={posts} />
-                <ProfileBio name={firebase.auth().ntUser.email} />
+                <ProfileRow profilePicture={currentLoggedInUser.profilePicture} posts={posts} />
+                <ProfileBio name={firebase.auth().currentUser.email} />
                 <ButtonsRow />
                 <View style={styles.stories}>
                     <Stories />
@@ -64,12 +63,12 @@ const ProfileScreen = () => {
                 <Feed
                     posts={posts}
                     setModalVisible={setModalVisible}
-                    setntPostToShow={setntPostToShow}
+                    setCurrentPostToShow={setCurrentPostToShow}
                 />
                 <PostModal
-                    post={ntPostToShow}
+                    post={currentPostToShow}
                     modalVisible={modalVisible}
-                    setModalVisible={setModalVisible} setntPostToShow={setntPostToShow} ntPostToShow={ntPostToShow} />
+                    setModalVisible={setModalVisible} setCurrentPostToShow={setCurrentPostToShow} currentPostToShow={currentPostToShow} />
             </ScrollView>
         </View>
     )
@@ -79,7 +78,7 @@ const ProfileHeader = ({ username, userEmail }) => {
     const navigation = useNavigation()
     return (
         <View style={styles.headerContainer}>
-            {userEmail !== firebase.auth().ntUser.email && <TouchableOpacity onPress={() => navigation.goBack()}>
+            {userEmail !== firebase.auth().currentUser.email && <TouchableOpacity onPress={() => navigation.goBack()}>
                 <Ionicons name="chevron-back" size={30} color="white" />
             </TouchableOpacity>}
             <Text numberOfLines={1} style={styles.username}>{username}</Text>
@@ -141,7 +140,7 @@ const ButtonsRow = () => {
     )
 }
 
-export const Feed = ({ posts, setModalVisible, ntPostToShow, setntPostToShow }) => {
+export const Feed = ({ posts, setModalVisible, currentPostToShow, setCurrentPostToShow }) => {
     const navigation = useNavigation()
     const { height, width } = useWindowDimensions()
     return (<View style={styles.feedContainer}>
@@ -154,7 +153,7 @@ export const Feed = ({ posts, setModalVisible, ntPostToShow, setntPostToShow }) 
                     <TouchableOpacity
                         onPress={() => {
                             setModalVisible(true)
-                            setntPostToShow(item)
+                            setCurrentPostToShow(item)
                             console.log(item)
                         }} key={index}>
                         <Image source={{ uri: item.imageUrl }} style={{ height: width / 3.1, width: width / 3.1, margin: 2 }} />
@@ -188,7 +187,6 @@ const PostModal = ({ post, modalVisible, setModalVisible }) => {
                     formModal={true}
                 />
             </View>
-            <Pressable  ></Pressable>
 
         </Modal>
     )
