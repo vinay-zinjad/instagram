@@ -89,7 +89,7 @@ const ButtonsRow = () => {
     )
 }
 
-const Feed = () => {
+export const Feed = () => {
     const { height, width } = useWindowDimensions()
     return (<View style={styles.feedContainer}>
         <View style={styles.feedIcons}>
