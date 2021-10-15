@@ -1,4 +1,4 @@
-# My Universal React Project
+# Instagram App Clone
 
 <p>
   <!-- iOS -->
