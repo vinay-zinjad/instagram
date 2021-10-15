@@ -13,10 +13,8 @@ const EditProfileScreen = () => {
     return (
         <KeyboardAvoidingView style={styles.container}>
             <ScrollView>
-
                 <FormikForm />
             </ScrollView>
-
         </KeyboardAvoidingView>
     )
 }
@@ -43,6 +41,7 @@ const FormikForm = () => {
                         bio: doc?.data()?.bio,
 
                     })
+                    setThumbnailUrl(doc.data().profile_picture)
                 })
             )
 
@@ -52,6 +51,7 @@ const FormikForm = () => {
 
     useEffect(() => {
         fetchDefaultInfo()
+        setThumbnailUrl(defaultInfo?.profilePicture)
     }, [])
 
 
@@ -69,7 +69,7 @@ const FormikForm = () => {
                 owner_uid: owner_uid,
                 username: username,
                 profile_picture: imageUrl,
-                website: website,
+                website: website || "",
                 bio: bio,
             })
             console.log("Succesfully updated profile imformation")
@@ -82,18 +82,28 @@ const FormikForm = () => {
 
     const SignupFormSchema = Yup.object().shape({
         name: Yup.string().required().min(2, "A name is required"),
-        username: Yup.string().required().min(2, "A username is required"),
+        username: Yup.string().lowercase().required().min(2, "A username is required"),
         imageUrl: Yup.string().url().required("A URL is required"),
         website: Yup.string().url(),
         bio: Yup.string().max(1000, 'Bio has reached the character limit')
     })
     const navigation = useNavigation()
+
+
+
     return (
 
         <Formik
             initialValues={{ name: defaultInfo?.name, username: defaultInfo?.username, website: defaultInfo?.website, bio: defaultInfo?.bio, imageUrl: defaultInfo?.profilePicture }}
             onSubmit={(values) => {
-                uploadChangedData(firebase.auth().currentUser.email, firebase.auth().currentUser.uid, values.name, values.username, values.imageUrl, values.website, values.bio)
+                uploadChangedData(firebase.auth()
+                    .currentUser.email,
+                    firebase.auth().currentUser.uid,
+                    values.name,
+                    values.username,
+                    values.imageUrl,
+                    values.website,
+                    values.bio)
             }}
             validationSchema={SignupFormSchema}
             validateOnMount={true}
@@ -140,6 +150,7 @@ const FormikForm = () => {
                                     borderBottomColor: 1 > values.username?.length || values.username?.length >= 2 ? "#ccc" : "#fd8183"
                                 }]}
                                 onChangeText={handleChange("username")}
+                                autoCapitalize="none"
                                 onBlur={handleBlur("username")}
                                 value={values.username}
                             />

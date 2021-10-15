@@ -57,7 +57,7 @@ const LoginForm = () => {
 
                             <TextInput
                                 placeholderTextColor="#444"
-                                placeholder="Phone number, username or email"
+                                placeholder="email"
                                 autoCapitalize="none"
                                 keyboardType="email-address"
                                 textContentType="emailAddress"

@@ -75,7 +75,6 @@ const FormikPostUploader = () => {
                             style={{
                                 width: 100, height: 100,
                                 resizeMode: "contain",
-                                backgroundColor: "gray",
                                 borderRadius: 10
                             }}
                         />

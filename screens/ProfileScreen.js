@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { Alert, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native'
+import React, { useEffect, useState, useRef } from 'react'
+import { Alert, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, Pressable, View } from 'react-native'
 import { FontAwesome, Entypo, Ionicons } from 'react-native-vector-icons'
 import Stories from '../components/home/Stories'
 import { POSTS } from '../data/posts'
@@ -7,7 +7,8 @@ import { Divider } from 'react-native-elements'
 import { firebase, db } from '../firebase'
 import { useNavigation, useRoute } from '@react-navigation/core'
 import Post from '../components/home/Post'
-
+import BottomSheet from '@gorhom/bottom-sheet'
+import { signOut } from '../utils'
 const isNotMe = (userEmail) => {
     return userEmail !== firebase.auth().currentUser.email
 }
@@ -20,6 +21,8 @@ const ProfileScreen = () => {
     const [posts, setPosts] = useState([])
     const [modalVisible, setModalVisible] = useState(false)
     const [currentPostToShow, setCurrentPostToShow] = useState()
+
+    const bottomSheetRef = useRef(null)
 
     const getUserInfo = (userUid) => {
 
@@ -53,10 +56,13 @@ const ProfileScreen = () => {
     if (!currentLoggedInUser) {
         return <Text>Loading...</Text>
     }
+    const openBottomSheet = () => {
+        bottomSheetRef.current.expand()
+    }
     return (
         <View style={styles.container}>
 
-            <ProfileHeader username={currentLoggedInUser?.username} userEmail={userEmail} />
+            <ProfileHeader openBottomSheet={openBottomSheet} username={currentLoggedInUser?.username} userEmail={userEmail} />
             <Divider width={1} color="#242424" orientation="horizontal" />
             <ScrollView style={styles.container}>
 
@@ -71,16 +77,29 @@ const ProfileScreen = () => {
                     setModalVisible={setModalVisible}
                     setCurrentPostToShow={setCurrentPostToShow}
                 />
+
                 <PostModal
                     post={currentPostToShow}
                     modalVisible={modalVisible}
                     setModalVisible={setModalVisible} setCurrentPostToShow={setCurrentPostToShow} currentPostToShow={currentPostToShow} />
             </ScrollView>
+            <BottomSheet
+                backgroundStyle={{ backgroundColor: "#141414" }}
+                handleIndicatorStyle={{ backgroundColor: "gray" }}
+                ref={bottomSheetRef}
+                enablePanDownToClose={true}
+                snapPoints={["30%", "50%"]} index={-1}  >
+                <View style={{ alignItems: 'center', justifyContent: "center" }}>
+                    <Pressable onPress={signOut} style={[styles.button, { width: "90%" }]}>
+                        <Text style={styles.buttonText}>Log Out</Text>
+                    </Pressable>
+                </View>
+            </BottomSheet>
         </View>
     )
 }
 
-const ProfileHeader = ({ username, userEmail }) => {
+const ProfileHeader = ({ username, userEmail, openBottomSheet }) => {
     const navigation = useNavigation()
     return (
         <View style={styles.headerContainer}>
@@ -92,7 +111,9 @@ const ProfileHeader = ({ username, userEmail }) => {
                 <TouchableOpacity onPress={() => navigation.navigate('NewPostScreen')}>
                     <FontAwesome name={"plus-square-o"} size={32} color="white" />
                 </TouchableOpacity>
-                <Entypo name={"menu"} size={32} color="white" />
+                <TouchableOpacity onPress={openBottomSheet}>
+                    <Entypo name={"menu"} size={32} color="white" />
+                </TouchableOpacity>
             </View>
         </View>
     )
@@ -123,15 +144,16 @@ const ProfileRow = ({ profilePicture, posts }) => {
 const ProfileBio = ({ name, email, website, bio }) => {
     return (
         <View style={styles.bioContainer}>
-            <Text style={styles.name}>{name}</Text>
-            <Text numberOfLines={3} style={styles.bio}>{
-                bio
+            {!!name &&
+                <Text style={styles.name}>{name}</Text>
             }
-            </Text>
-            {website && (
+            {!!bio &&
+                <Text numberOfLines={3} style={styles.bio}>{bio}</Text>
+            }
+            {!!website && (
                 <Text style={styles.text}>{website}</Text>
             )}
-            {email && (
+            {!!email && (
                 <Text style={styles.text}>{email}</Text>
             )}
         </View>
@@ -286,7 +308,7 @@ const styles = StyleSheet.create({
     },
     infoContainerMain: {
         flexDirection: "row",
-        width: "60%",
+        width: "55%",
         justifyContent: "space-between",
         marginLeft: 20,
         marginRight: 10,
