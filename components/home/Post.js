@@ -9,6 +9,39 @@ const Post = ({ post, formModal = false, setModalVisible, modalVisible }) => {
     if (!post) {
         return <></>;
     }
+
+    const [postOwnerData, setPostOwnerData] = useState()
+
+
+    //fetching data again because post username and prifilepicture does not update wen user edit profile info
+    const fetchPostOwnerData = async () => {
+
+        const unsubscribe = db
+            .collection('users')
+            .where('owner_uid', '==', post.owner_uid).limit(1).onSnapshot(
+                snapshot => snapshot.docs.map(doc => {
+                    setPostOwnerData({
+                        name: doc?.data()?.name,
+                        username: doc?.data()?.username,
+                        profilePicture: doc.data()?.profile_picture,
+                        website: doc?.data()?.website,
+                        email: doc?.data()?.email,
+                        owner_uid: doc?.data()?.owner_uid,
+                        bio: doc?.data()?.bio,
+
+                    })
+
+                })
+            )
+
+        return unsubscribe
+    }
+    useEffect(() => {
+        fetchPostOwnerData()
+    }, [])
+    if (!postOwnerData) {
+        return <></>;
+    }
     const handleLike = post => {
         const currentLikeStatus = !post?.likes_by_users.includes(
             firebase.auth().currentUser.email
@@ -34,7 +67,7 @@ const Post = ({ post, formModal = false, setModalVisible, modalVisible }) => {
     }
     return (
         <View>
-            <PostHeader post={post} formModal={formModal} setModalVisible={setModalVisible} />
+            <PostHeader post={post} postOwnerData={postOwnerData} formModal={formModal} setModalVisible={setModalVisible} />
             <PostImage post={post} />
             <View style={{ marginHorizontal: 15, marginVertical: 10 }}>
                 <PostFooter post={post} handleLike={handleLike} />
@@ -43,7 +76,7 @@ const Post = ({ post, formModal = false, setModalVisible, modalVisible }) => {
     )
 }
 
-const PostHeader = ({ post, formModal, setModalVisible }) => {
+const PostHeader = ({ post, postOwnerData, formModal, setModalVisible }) => {
 
     const navigation = useNavigation()
     return (
@@ -61,8 +94,8 @@ const PostHeader = ({ post, formModal, setModalVisible }) => {
                     userEmail: post.owner_email
                 }
                 )} style={styles.PostHeaderUserContainer}>
-                    <Image style={styles.profilePicture} source={{ uri: post.profile_picture }} />
-                    <Text style={styles.userName}>{post.user}</Text>
+                    <Image style={styles.profilePicture} source={{ uri: postOwnerData.profilePicture }} />
+                    <Text style={styles.userName}>{postOwnerData.username}</Text>
                 </TouchableOpacity>
             </View>
             <Entypo name="dots-three-vertical" color="gray" size={20} />

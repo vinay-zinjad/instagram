@@ -9,6 +9,7 @@ import { useNavigation, useRoute } from '@react-navigation/core'
 import Post from '../components/home/Post'
 import BottomSheet from '@gorhom/bottom-sheet'
 import { signOut } from '../utils'
+import LoadingScreen from './LoadingScreen'
 const isNotMe = (userEmail) => {
     return userEmail !== firebase.auth().currentUser.email
 }
@@ -54,7 +55,7 @@ const ProfileScreen = () => {
         getUserPosts(userEmail)
     }, [])
     if (!currentLoggedInUser) {
-        return <Text>Loading...</Text>
+        return <LoadingScreen />
     }
     const openBottomSheet = () => {
         bottomSheetRef.current.expand()
