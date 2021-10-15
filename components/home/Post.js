@@ -1,7 +1,6 @@
 import { useNavigation } from '@react-navigation/core'
 import React, { useEffect, useState } from 'react'
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import { Divider } from "react-native-elements"
 import { Entypo, Fontisto, Feather, AntDesign, Ionicons } from 'react-native-vector-icons'
 import { db, firebase } from '../../firebase'
 
@@ -136,7 +135,7 @@ const PostFooter = ({ handleLike, post }) => (
             </TouchableOpacity>
 
         </View>
-        <Text style={styles.likestext}>{post?.likes_by_users?.length.toLocaleString('en') || 0} likes</Text>
+        <Text style={styles.likestext}>{post?.likes_by_users?.length.toLocaleString('en') || 0} {post?.likes_by_users?.length === 1 ? "like" : "likes"}</Text>
         {/* caption */}
         <Text numberOfLines={2} >
             <Text style={styles.likestext}>{post?.user}</Text>
