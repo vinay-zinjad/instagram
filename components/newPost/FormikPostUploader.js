@@ -102,7 +102,7 @@ const FormikPostUploader = () => {
                         value={values.imageUrl}
                     />
                     {errors.imageUrl && (
-                        <Text style={{ fontSize: 10, color: "red" }}>{errors.imageUrl}</Text>
+                        <Text style={{ fontSize: 12, color: "#fd8183", marginBottom: 50 }}>{errors.imageUrl}</Text>
                     )}
                     <Button onPress={handleSubmit}
                         title="Share"
