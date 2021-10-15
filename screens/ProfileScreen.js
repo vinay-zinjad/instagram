@@ -204,7 +204,7 @@ const ButtonsRow = ({ userEmail }) => {
 }
 
 export const Feed = ({ posts, setModalVisible, currentPostToShow, setCurrentPostToShow }) => {
-    const navigation = useNavigation()
+
     const { height, width } = useWindowDimensions()
     return (<View style={styles.feedContainer}>
         <View style={styles.feedIcons}>
@@ -228,7 +228,7 @@ export const Feed = ({ posts, setModalVisible, currentPostToShow, setCurrentPost
     </View >)
 }
 
-const PostModal = ({ post, modalVisible, setModalVisible }) => {
+export const PostModal = ({ post, modalVisible, setModalVisible }) => {
 
     return (
 

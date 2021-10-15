@@ -2,15 +2,19 @@ import React, { useEffect, useState } from 'react'
 import { StyleSheet, Text, TextInput, View } from 'react-native'
 import { Fontisto } from 'react-native-vector-icons'
 import { db } from '../firebase'
-import { Feed } from './ProfileScreen'
+import { Feed, PostModal } from './ProfileScreen'
 
 const SearchScreen = () => {
     const [posts, setPosts] = useState([])
-    useEffect(() => {
+
+    const [modalVisible, setModalVisible] = useState(false)
+    const [currentPostToShow, setCurrentPostToShow] = useState()
+    useEffect(() =>
         db.collectionGroup('posts').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
             setPosts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })))
         })
-    }, [])
+
+        , [])
     return (
         <View style={styles.container}>
             <View style={styles.inputContainer}>
@@ -21,7 +25,15 @@ const SearchScreen = () => {
                     style={styles.input}
                 />
             </View>
-            <Feed posts={posts} />
+            <PostModal
+                post={currentPostToShow}
+                modalVisible={modalVisible}
+                setModalVisible={setModalVisible}
+                setCurrentPostToShow={setCurrentPostToShow}
+                currentPostToShow={currentPostToShow} />
+            <Feed posts={posts}
+                setModalVisible={setModalVisible}
+                setCurrentPostToShow={setCurrentPostToShow} />
         </View>
     )
 }
