@@ -1,5 +1,5 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import HomeScreen from '../screens/HomeScreen';
 import Entypo from 'react-native-vector-icons/Entypo';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons'
@@ -12,9 +12,27 @@ import SearchScreen from '../screens/SearchScreen';
 import ReelsScreen from '../screens/ReelsScreen';
 import ShoppingScreen from '../screens/ShoppingScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import { db, firebase } from '../firebase';
 
 const Tab = createBottomTabNavigator();
 const BottomTabNav = () => {
+    const [currentLoggedInUser, setCurrentLoggedInUser] = useState(null)
+    useEffect(() => {
+
+        db.collection('users')
+            .where('owner_uid', '==', firebase.auth().currentUser.uid).limit(1).onSnapshot(
+                snapshot => snapshot.docs.map(doc => {
+                    setCurrentLoggedInUser({
+                        username: doc.data().username,
+                        profilePicture: doc.data().profile_picture,
+                        name: doc.data().name,
+                        bio: doc.data().bio,
+                        website: doc.data().website,
+                    })
+                })
+            )
+    }, [])
+
     return (
         <Tab.Navigator
             screenOptions={{
@@ -79,7 +97,7 @@ const BottomTabNav = () => {
                 name="profile"
                 options={{
                     tabBarIcon: ({ color, focused }) => (
-                        <Image source={{ uri: "https://source.unsplash.com/YUu9UAcOKZ4/900x900" }} style={{ height: 30, width: 30, borderRadius: 20, borderColor: "white", borderWidth: focused ? 2 : 0 }} />
+                        <Image source={{ uri: currentLoggedInUser?.profilePicture }} style={{ height: 30, width: 30, borderRadius: 20, borderColor: "white", borderWidth: focused ? 2 : 0 }} />
                     ),
                 }}
             />

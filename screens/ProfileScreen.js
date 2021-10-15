@@ -84,13 +84,13 @@ const ProfileScreen = () => {
                     setModalVisible={setModalVisible} setCurrentPostToShow={setCurrentPostToShow} currentPostToShow={currentPostToShow} />
             </ScrollView>
             <BottomSheet
-                backgroundStyle={{ backgroundColor: "#141414" }}
+                backgroundStyle={{ backgroundColor: "#333333" }}
                 handleIndicatorStyle={{ backgroundColor: "gray" }}
                 ref={bottomSheetRef}
                 enablePanDownToClose={true}
                 snapPoints={["30%", "50%"]} index={-1}  >
                 <View style={{ alignItems: 'center', justifyContent: "center" }}>
-                    <Pressable onPress={signOut} style={[styles.button, { width: "90%" }]}>
+                    <Pressable onPress={signOut} style={[styles.button, { width: "90%", marginTop: 30 }]}>
                         <Text style={styles.buttonText}>Log Out</Text>
                     </Pressable>
                 </View>
