@@ -203,29 +203,33 @@ const ButtonsRow = ({ userEmail }) => {
     )
 }
 
-export const Feed = ({ posts, setModalVisible, currentPostToShow, setCurrentPostToShow }) => {
+export const Feed = ({ posts, setModalVisible, setCurrentPostToShow }) => {
 
     const { height, width } = useWindowDimensions()
-    return (<View style={styles.feedContainer}>
-        <View style={styles.feedIcons}>
+    return (
+        <View style={styles.feedContainer}>
+            <View style={styles.feedIcons}>
 
-        </View>
-        <View style={styles.feedImages}>
-            {
-                posts.map((item, index) => (
-                    <TouchableOpacity
-                        onPress={() => {
-                            setModalVisible(true)
-                            setCurrentPostToShow(item)
-                            console.log(item)
-                        }} key={index}>
-                        <Image source={{ uri: item.imageUrl }} style={{ height: width / 3.1, width: width / 3.1, margin: 2 }} />
-                    </TouchableOpacity>
-                ))
-            }
+            </View>
 
-        </View>
-    </View >)
+
+            <View style={styles.feedImages}>
+                {
+                    posts.map((item, index) => (
+                        <TouchableOpacity
+                            onPress={() => {
+                                setModalVisible(true)
+                                setCurrentPostToShow(item)
+                                console.log(item)
+                            }} key={index}>
+                            <Image source={{ uri: item.imageUrl }} style={{ height: width / 3.12, width: width / 3.12, margin: 2 }} />
+                        </TouchableOpacity>
+                    ))
+                }
+
+            </View>
+
+        </View >)
 }
 
 export const PostModal = ({ post, modalVisible, setModalVisible }) => {
@@ -362,12 +366,19 @@ const styles = StyleSheet.create({
         marginLeft: 10
     },
     // feed
-    feedContainer: {},
+    feedContainerWrapper: {
+        justifyContent: "center"
+    },
+    feedContainer: {
+
+
+    },
+
     feedIcons: {},
     feedImages: {
-        // justifyContent: "space-between",
         flexWrap: 'wrap',
         flexDirection: "row",
+        alignSelf: "center"
     },
 
     modalContainer: {
